@@ -1,10 +1,9 @@
-resource "mongodbatlas_project" "this" {
-  org_id = var.org_id
-  name   = var.project_name
-}
+# Lab 1 - Replica set single-region con recursos planos, dentro de un proyecto existente.
+# El proyecto ya esta creado (var.project_id) y tiene el private networking configurado;
+# aca solo desplegamos el cluster, el usuario y la IP de acceso publico.
 
 resource "mongodbatlas_advanced_cluster" "this" {
-  project_id   = mongodbatlas_project.this.id
+  project_id   = var.project_id
   name         = var.cluster_name
   cluster_type = "REPLICASET"
 
@@ -27,7 +26,7 @@ resource "mongodbatlas_advanced_cluster" "this" {
 }
 
 resource "mongodbatlas_database_user" "this" {
-  project_id         = mongodbatlas_project.this.id
+  project_id         = var.project_id
   username           = var.db_username
   password           = var.db_password
   auth_database_name = "admin"
@@ -39,7 +38,7 @@ resource "mongodbatlas_database_user" "this" {
 }
 
 resource "mongodbatlas_project_ip_access_list" "this" {
-  project_id = mongodbatlas_project.this.id
+  project_id = var.project_id
   cidr_block = var.ip_access_cidr
   comment    = "Workshop - revisar/cerrar despues de la sesion"
 }

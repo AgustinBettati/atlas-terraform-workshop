@@ -1,28 +1,22 @@
-module "project" {
-  source  = "terraform-mongodbatlas-modules/project/mongodbatlas"
-  version = "~> 0.2"
-
-  org_id = var.org_id
-  name   = var.project_name
-  # El modulo valida las entradas y rechaza 0.0.0.0/0 salvo skip_allow_all_validation = true.
-  # Para el workshop abrimos a todo Internet para conectar desde cualquier laptop; NO en produccion.
-  ip_access_list = [{ source = var.ip_access_cidr, comment = "Workshop", skip_allow_all_validation = true }]
-  tags           = { team = "workshop", scenario = "multicloud" }
-}
+# Lab 2 - Replica set multi-cloud con el modulo oficial cluster, dentro de un proyecto existente.
+# El proyecto ya esta creado (var.project_id) y tiene el private networking configurado;
+# aca solo desplegamos el cluster, el usuario y la IP de acceso publico.
 
 module "cluster" {
   source  = "terraform-mongodbatlas-modules/cluster/mongodbatlas"
   version = "~> 0.3"
 
   name       = var.cluster_name
-  project_id = module.project.id
+  project_id = var.project_id
 
   cluster_type = "REPLICASET"
 
   # El orden define la prioridad de eleccion: AWS=7, Azure=6, GCP=5.
+  # Mismas regiones que recomienda el Lab 1: para tener connection string privada el
+  # proyecto debe tener un private endpoint en CADA una de estas tres regiones.
   regions = [
-    { name = "EU_WEST_1", provider_name = "AWS", node_count = 1 },
-    { name = "EUROPE_WEST", provider_name = "AZURE", node_count = 1 },
+    { name = "EU_SOUTH_2", provider_name = "AWS", node_count = 1 },
+    { name = "SPAIN_CENTRAL", provider_name = "AZURE", node_count = 1 },
     { name = "EUROPE_SOUTHWEST_1", provider_name = "GCP", node_count = 1 },
   ]
 
@@ -34,7 +28,7 @@ module "cluster" {
 }
 
 resource "mongodbatlas_database_user" "this" {
-  project_id         = module.project.id
+  project_id         = var.project_id
   username           = var.db_username
   password           = var.db_password
   auth_database_name = "admin"
@@ -43,4 +37,10 @@ resource "mongodbatlas_database_user" "this" {
     role_name     = "readWriteAnyDatabase"
     database_name = "admin"
   }
+}
+
+resource "mongodbatlas_project_ip_access_list" "this" {
+  project_id = var.project_id
+  cidr_block = var.ip_access_cidr
+  comment    = "Workshop - revisar/cerrar despues de la sesion"
 }

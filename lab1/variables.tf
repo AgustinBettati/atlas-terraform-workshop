@@ -1,12 +1,6 @@
-variable "org_id" {
-  description = "ID de la Organizacion Atlas (24 hex). Organization Settings."
+variable "project_id" {
+  description = "ID del proyecto Atlas compartido donde se despliega el cluster (24 hex). El proyecto ya existe y tiene el private networking configurado."
   type        = string
-}
-
-variable "project_name" {
-  description = "Nombre del proyecto Atlas a crear en este lab."
-  type        = string
-  default     = "workshop-lab1"
 }
 
 variable "cluster_name" {
@@ -23,7 +17,7 @@ variable "cloud_provider" {
 variable "region_name" {
   description = <<-EOT
     Region de Atlas donde se aprovisiona el cluster. Tiene que corresponder al cloud_provider elegido.
-    Ejemplos de regiones en Espana:
+    Ejemplos de regiones en Espana (mismas que usa el Lab 2, para saber donde configurar el private endpoint):
       - AWS:   EU_SOUTH_2          (Espana / Zaragoza)
       - AZURE: SPAIN_CENTRAL       (Spain Central / Madrid)
       - GCP:   EUROPE_SOUTHWEST_1  (Madrid)
