@@ -3,8 +3,9 @@
 # aca solo desplegamos el cluster, el usuario y la IP de acceso publico.
 
 # Resolvemos la IP publica de ESTA laptop. Como el proyecto es compartido, cada persona
-# agrega solo su propia IP (/32) en vez de 0.0.0.0/0: asi no chocan las entradas entre
-# participantes y el acceso queda acotado a cada quien.
+# agrega solo su propia IP (/32) en vez de 0.0.0.0/0, manteniendo el acceso acotado.
+# Si dos personas comparten IP publica (mismo NAT), el recurso no falla por entrada
+# duplicada: simplemente queda la misma IP habilitada, que es justo lo que queremos.
 data "http" "myip" {
   url = "https://api.ipify.org"
 }
