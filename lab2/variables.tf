@@ -20,9 +20,3 @@ variable "db_password" {
   type        = string
   sensitive   = true
 }
-
-variable "ip_access_cidr" {
-  description = "CIDR permitido. 0.0.0.0/0 SOLO para el workshop."
-  type        = string
-  default     = "0.0.0.0/0"
-}

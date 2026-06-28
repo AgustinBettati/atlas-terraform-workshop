@@ -2,6 +2,13 @@
 # El proyecto ya esta creado (var.project_id) y tiene el private networking configurado;
 # aca solo desplegamos el cluster, el usuario y la IP de acceso publico.
 
+# Resolvemos la IP publica de ESTA laptop. Como el proyecto es compartido, cada persona
+# agrega solo su propia IP (/32) en vez de 0.0.0.0/0: asi no chocan las entradas entre
+# participantes y el acceso queda acotado a cada quien.
+data "http" "myip" {
+  url = "https://api.ipify.org"
+}
+
 module "project" {
   source  = "terraform-mongodbatlas-modules/project/mongodbatlas"
   version = "~> 0.2"
@@ -10,9 +17,9 @@ module "project" {
   # recursos sueltos (aca la ip_access_list) sobre un proyecto que ya existe.
   project_id = var.project_id
 
-  # El modulo rechaza 0.0.0.0/0 salvo skip_allow_all_validation = true. Para el workshop
-  # abrimos a todo Internet para conectar desde cualquier laptop; NO en produccion.
-  ip_access_list = [{ source = var.ip_access_cidr, comment = "Workshop", skip_allow_all_validation = true }]
+  # Cada participante abre solo su propia IP (/32). Al ser un /32 ya no hace falta
+  # skip_allow_all_validation (ese flag solo era necesario para 0.0.0.0/0).
+  ip_access_list = [{ source = "${chomp(data.http.myip.response_body)}/32", comment = "Workshop ${var.cluster_name}" }]
 }
 
 module "cluster" {

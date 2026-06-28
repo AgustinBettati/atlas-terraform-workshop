@@ -28,7 +28,7 @@ Los módulos publican sus **inputs y outputs** en el Terraform Registry (pestañ
 
 ## Pistas
 
-**Módulo `project` (modo referencia):** ya viene resuelto. Al pasar `project_id` el módulo no crea el proyecto; solo administra la `ip_access_list` (con `skip_allow_all_validation = true`, porque rechaza `0.0.0.0/0` sin ese flag). Expone el output `id`, que se usa como `project_id` del cluster y del usuario (`module.project.id`).
+**Módulo `project` (modo referencia):** ya viene resuelto. Al pasar `project_id` el módulo no crea el proyecto; solo administra la `ip_access_list`, que abre **tu propia IP** (`/32`, resuelta con el `data "http" "myip"` que ya está en `main.tf`). Como es un `/32` y no `0.0.0.0/0`, no hace falta `skip_allow_all_validation`. Expone el output `id`, que se usa como `project_id` del cluster y del usuario (`module.project.id`).
 
 **Módulo `cluster`:**
 - `project_id` = `var.project_id`, `cluster_type` = `REPLICASET`.

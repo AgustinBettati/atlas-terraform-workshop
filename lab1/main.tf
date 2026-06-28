@@ -2,6 +2,13 @@
 # El proyecto ya esta creado (var.project_id) y tiene el private networking configurado;
 # aca solo desplegamos el cluster, el usuario y la IP de acceso publico.
 
+# Resolvemos la IP publica de ESTA laptop. Como el proyecto es compartido, cada persona
+# agrega solo su propia IP (/32) en vez de 0.0.0.0/0: asi no chocan las entradas entre
+# participantes y el acceso queda acotado a cada quien.
+data "http" "myip" {
+  url = "https://api.ipify.org"
+}
+
 resource "mongodbatlas_advanced_cluster" "this" {
   project_id   = var.project_id
   name         = var.cluster_name
@@ -39,6 +46,6 @@ resource "mongodbatlas_database_user" "this" {
 
 resource "mongodbatlas_project_ip_access_list" "this" {
   project_id = var.project_id
-  cidr_block = var.ip_access_cidr
-  comment    = "Workshop - revisar/cerrar despues de la sesion"
+  cidr_block = "${chomp(data.http.myip.response_body)}/32"
+  comment    = "Workshop ${var.cluster_name} - revisar/cerrar despues de la sesion"
 }
