@@ -1,16 +1,30 @@
-# Lab 2 - Completa el modulo oficial cluster para un replica set multi-cloud.
+# Lab 2 - Completa los modulos oficiales para un replica set multi-cloud.
 # El proyecto ya existe (var.project_id) y tiene private networking configurado.
 # Docs:
+#   modulo project: https://registry.terraform.io/modules/terraform-mongodbatlas-modules/project/mongodbatlas/latest
 #   modulo cluster: https://registry.terraform.io/modules/terraform-mongodbatlas-modules/cluster/mongodbatlas/latest
 #   database_user:  https://registry.terraform.io/providers/mongodb/mongodbatlas/latest/docs/resources/database_user
 #   regiones:       https://www.mongodb.com/docs/atlas/cloud-providers-regions/
+
+module "project" {
+  source  = "terraform-mongodbatlas-modules/project/mongodbatlas"
+  version = "~> 0.2"
+
+  # Modo referencia: al pasar project_id el modulo NO crea el proyecto, solo gestiona
+  # recursos sueltos (aca la ip_access_list) sobre un proyecto que ya existe.
+  project_id = var.project_id
+
+  # El modulo rechaza 0.0.0.0/0 salvo skip_allow_all_validation = true. Para el workshop
+  # abrimos a todo Internet para conectar desde cualquier laptop; NO en produccion.
+  ip_access_list = [{ source = var.ip_access_cidr, comment = "Workshop", skip_allow_all_validation = true }]
+}
 
 module "cluster" {
   source  = "terraform-mongodbatlas-modules/cluster/mongodbatlas"
   version = "~> 0.3"
 
   name         = var.cluster_name
-  project_id   = var.project_id
+  project_id   = module.project.id
   cluster_type = "REPLICASET"
 
   # TODO: define la lista regions con 3 entradas (AWS EU_SOUTH_2, AZURE SPAIN_CENTRAL,
@@ -19,14 +33,7 @@ module "cluster" {
 }
 
 resource "mongodbatlas_database_user" "this" {
-  project_id         = var.project_id
+  project_id         = module.project.id
   auth_database_name = "admin"
   # TODO: define username, password y un bloque roles
-}
-
-# ip_access_list ya viene resuelto: acceso publico para el workshop (NO en produccion).
-resource "mongodbatlas_project_ip_access_list" "this" {
-  project_id = var.project_id
-  cidr_block = var.ip_access_cidr
-  comment    = "Workshop - revisar/cerrar despues de la sesion"
 }
