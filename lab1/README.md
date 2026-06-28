@@ -33,7 +33,7 @@ Buscá los argumentos de cada recurso acá. Cada página tiene un ejemplo arriba
 - En el provider 2.0 `replication_specs` y `region_configs` son **listas de objetos** (sintaxis con `=` y `[ { ... } ]`, no bloques).
 - 3 nodos electables (`electable_specs`), tamaño **M10**, `priority` = 7 (la región primaria del replica set).
 - El usuario de base: `auth_database_name` = `admin` y un rol `readWriteAnyDatabase` sobre `admin`.
-- IP access list: usá tu propia IP como `/32`. El `data "http" "myip"` ya está, así que el `cidr_block` es `"${chomp(data.http.myip.response_body)}/32"`. Como el proyecto es compartido, cada participante agrega **solo su IP** (no `0.0.0.0/0`): así no chocan las entradas entre personas.
+- IP access list: usá tu propia IP como `/32`. El `data "http" "myip"` ya está, así que el `cidr_block` es `"${chomp(data.http.myip.response_body)}/32"`. Como el proyecto es compartido, cada participante agrega **solo su IP** (no `0.0.0.0/0`), manteniendo el acceso acotado.
 
 ## Aplicar
 
@@ -79,8 +79,7 @@ en `null` y seguís usando la cadena pública.
 
 ## Notas
 
-- Cada participante abre **solo su propia IP** (`/32`), resuelta automáticamente con el `data "http"`. No usamos `0.0.0.0/0`: en un proyecto compartido esa entrada es única por CIDR, así que el segundo `apply` con `0.0.0.0/0` fallaría por entrada duplicada (además de quedar abierto a todo Internet).
-- Si estás detrás del **mismo NAT** que otra persona (misma red/oficina), tu IP pública puede coincidir con la suya y el `apply` puede fallar por duplicado. En ese caso, alcanza con que la entrada exista una vez (ya tenés acceso); seguí adelante.
+- Cada participante abre **solo su propia IP** (`/32`), resuelta automáticamente con el `data "http"`. No usamos `0.0.0.0/0`, que dejaría el cluster abierto a todo Internet. Si dos personas comparten IP pública (mismo NAT), no pasa nada: el recurso no falla por entrada duplicada, simplemente queda esa IP habilitada.
 - Estás trabajando sobre un **proyecto compartido**: tu `ip_access_list` se suma a lo que ya haya. No borres el cluster todavía: en el Lab 2 vas a levantar un segundo cluster en el mismo proyecto.
 
 ## Limpieza

@@ -8,7 +8,8 @@
 #   regiones:               https://www.mongodb.com/docs/atlas/cloud-providers-regions/
 
 # Resuelve la IP publica de ESTA laptop (ya viene resuelto). El proyecto es compartido,
-# asi que cada persona abre solo su propia IP (/32) en vez de 0.0.0.0/0.
+# asi que cada persona abre solo su propia IP (/32) en vez de 0.0.0.0/0. Si dos personas
+# comparten IP (mismo NAT), el recurso no falla por duplicado: queda esa IP habilitada.
 data "http" "myip" {
   url = "https://api.ipify.org"
 }
