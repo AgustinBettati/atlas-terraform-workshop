@@ -6,6 +6,12 @@
 #   database_user:  https://registry.terraform.io/providers/mongodb/mongodbatlas/latest/docs/resources/database_user
 #   regiones:       https://www.mongodb.com/docs/atlas/cloud-providers-regions/
 
+# Resuelve la IP publica de ESTA laptop (ya viene resuelto). El proyecto es compartido,
+# asi que cada persona abre solo su propia IP (/32) en vez de 0.0.0.0/0.
+data "http" "myip" {
+  url = "https://api.ipify.org"
+}
+
 module "project" {
   source  = "terraform-mongodbatlas-modules/project/mongodbatlas"
   version = "~> 0.2"
@@ -14,9 +20,9 @@ module "project" {
   # recursos sueltos (aca la ip_access_list) sobre un proyecto que ya existe.
   project_id = var.project_id
 
-  # El modulo rechaza 0.0.0.0/0 salvo skip_allow_all_validation = true. Para el workshop
-  # abrimos a todo Internet para conectar desde cualquier laptop; NO en produccion.
-  ip_access_list = [{ source = var.ip_access_cidr, comment = "Workshop", skip_allow_all_validation = true }]
+  # Cada participante abre solo su propia IP (/32). Al ser un /32 ya no hace falta
+  # skip_allow_all_validation (ese flag solo era necesario para 0.0.0.0/0).
+  ip_access_list = [{ source = "${chomp(data.http.myip.response_body)}/32", comment = "Workshop ${var.cluster_name}" }]
 }
 
 module "cluster" {

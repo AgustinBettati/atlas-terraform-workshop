@@ -7,6 +7,12 @@
 #   project_ip_access_list: https://registry.terraform.io/providers/mongodb/mongodbatlas/latest/docs/resources/project_ip_access_list
 #   regiones:               https://www.mongodb.com/docs/atlas/cloud-providers-regions/
 
+# Resuelve la IP publica de ESTA laptop (ya viene resuelto). El proyecto es compartido,
+# asi que cada persona abre solo su propia IP (/32) en vez de 0.0.0.0/0.
+data "http" "myip" {
+  url = "https://api.ipify.org"
+}
+
 resource "mongodbatlas_advanced_cluster" "this" {
   project_id   = var.project_id
   name         = var.cluster_name
@@ -23,5 +29,5 @@ resource "mongodbatlas_database_user" "this" {
 
 resource "mongodbatlas_project_ip_access_list" "this" {
   project_id = var.project_id
-  # TODO
+  # TODO: cidr_block = tu IP actual como /32 (usa data.http.myip y chomp()) + un comment
 }
