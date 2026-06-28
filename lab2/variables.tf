@@ -1,12 +1,6 @@
-variable "org_id" {
-  description = "ID de la Organizacion Atlas (24 hex)."
+variable "project_id" {
+  description = "ID del proyecto Atlas compartido donde se despliega el cluster (24 hex). El proyecto ya existe y tiene el private networking configurado."
   type        = string
-}
-
-variable "project_name" {
-  description = "Nombre del proyecto Atlas a crear en este lab."
-  type        = string
-  default     = "workshop-lab2"
 }
 
 variable "cluster_name" {

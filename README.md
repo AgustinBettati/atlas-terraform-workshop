@@ -5,7 +5,7 @@ Workshop guiado para desplegar **MongoDB Atlas con Terraform** desde cero, sin e
 - **Lab 1:** un replica set single-region con **recursos de Terraform planos**.
 - **Lab 2:** un replica set **multi-cloud** (AWS + Azure + GCP) con los **módulos oficiales** de Atlas.
 
-Es un formato de **ejercicio guiado**: cada lab trae la estructura armada con un `# TODO` en `main.tf` que vas a completar siguiendo la documentación. Al terminar tenés los dos clusters corriendo en paralelo.
+Es un formato de **ejercicio guiado**: cada lab trae la estructura armada con un `# TODO` en `main.tf` que vas a completar siguiendo la documentación. Los dos labs despliegan sobre un **proyecto compartido que ya existe** (con private networking ya configurado); al terminar tenés los dos clusters corriendo en paralelo en ese proyecto.
 
 > **Ramas del repo:** la rama `main` tiene los `main.tf` a medio completar (los `# TODO`). La rama `solution` tiene todo resuelto y validado, por si te trabás o querés comparar.
 
@@ -30,20 +30,19 @@ terraform version
 
 ## Lab 0 — Setup (hacelo antes de los labs)
 
-### 1. Cuenta y organización en Atlas
+### 1. Cuenta y proyecto compartido en Atlas
 
 1. Registrate / entrá en https://cloud.mongodb.com.
-2. Creá una **Organización** (o usá una existente si ya tenés).
-3. Andá a **Organization Settings** y copiá el **Organization ID** (24 caracteres hex). Lo vas a pasar a Terraform como `org_id`.
+2. El workshop usa un **proyecto que ya existe** y tiene el **private networking configurado** (private endpoints en las regiones que usan los labs). Quien administra el proyecto te pasa su **Project ID** (24 caracteres hex). Lo vas a pasar a Terraform como `project_id`.
 
-> Los **proyectos** NO los creás a mano: los crea Terraform en cada lab.
+> No creás ni la organización ni el proyecto: trabajás dentro del proyecto compartido. Por eso los `.tf` no tienen `org_id` ni crean `mongodbatlas_project`.
 
 ### 2. Service Account (cómo se autentica Terraform)
 
 Terraform necesita credenciales para hablar con la API de Atlas. Usamos un **Service Account** (par OAuth `Client ID` / `Client Secret`).
 
-1. En la organización: **Access Manager → Service Accounts → Create Service Account**.
-2. Asignale el rol **`Organization Project Creator`** (suficiente para crear proyectos, clusters y usuarios).
+1. En **Access Manager → Service Accounts → Create Service Account**.
+2. Dale acceso al proyecto compartido con un rol que permita crear clusters y usuarios (p. ej. **`Project Owner`** sobre ese proyecto).
 3. **Copiá el `Client Secret` en el momento**: se muestra una sola vez. Guardá `Client ID` y `Client Secret`.
 
 > Un *Service Account* es la forma OAuth2 recomendada hoy; reemplaza a las viejas *API Keys* (par public/private). Para este workshop solo te importa que es el modo en que Terraform se autentica.
@@ -73,7 +72,7 @@ export MONGODB_ATLAS_CLIENT_SECRET="<TU_CLIENT_SECRET>"
 
 ## Los labs
 
-1. **[Lab 1 — recursos planos](lab1/README.md):** replica set single-region en AWS.
+1. **[Lab 1 — recursos planos](lab1/README.md):** replica set single-region (proveedor/región configurable).
 2. **[Lab 2 — módulos multi-cloud](lab2/README.md):** replica set en AWS + Azure + GCP.
 
 Hacelos en orden. Cada uno tiene su propio README con objetivo, qué completar, enlaces a la documentación y el comando de limpieza (`terraform destroy`).
