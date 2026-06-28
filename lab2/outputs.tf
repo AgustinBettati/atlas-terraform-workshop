@@ -1,6 +1,6 @@
 output "project_id" {
   description = "ID del proyecto (compartido) donde se desplego el cluster."
-  value       = var.project_id
+  value       = module.project.id
 }
 
 output "connection_string_public" {

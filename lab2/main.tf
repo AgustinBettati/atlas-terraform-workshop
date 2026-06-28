@@ -1,13 +1,26 @@
-# Lab 2 - Replica set multi-cloud con el modulo oficial cluster, dentro de un proyecto existente.
+# Lab 2 - Replica set multi-cloud con los modulos oficiales, dentro de un proyecto existente.
 # El proyecto ya esta creado (var.project_id) y tiene el private networking configurado;
 # aca solo desplegamos el cluster, el usuario y la IP de acceso publico.
+
+module "project" {
+  source  = "terraform-mongodbatlas-modules/project/mongodbatlas"
+  version = "~> 0.2"
+
+  # Modo referencia: al pasar project_id el modulo NO crea el proyecto, solo gestiona
+  # recursos sueltos (aca la ip_access_list) sobre un proyecto que ya existe.
+  project_id = var.project_id
+
+  # El modulo rechaza 0.0.0.0/0 salvo skip_allow_all_validation = true. Para el workshop
+  # abrimos a todo Internet para conectar desde cualquier laptop; NO en produccion.
+  ip_access_list = [{ source = var.ip_access_cidr, comment = "Workshop", skip_allow_all_validation = true }]
+}
 
 module "cluster" {
   source  = "terraform-mongodbatlas-modules/cluster/mongodbatlas"
   version = "~> 0.3"
 
   name       = var.cluster_name
-  project_id = var.project_id
+  project_id = module.project.id
 
   cluster_type = "REPLICASET"
 
@@ -28,7 +41,7 @@ module "cluster" {
 }
 
 resource "mongodbatlas_database_user" "this" {
-  project_id         = var.project_id
+  project_id         = module.project.id
   username           = var.db_username
   password           = var.db_password
   auth_database_name = "admin"
@@ -37,10 +50,4 @@ resource "mongodbatlas_database_user" "this" {
     role_name     = "readWriteAnyDatabase"
     database_name = "admin"
   }
-}
-
-resource "mongodbatlas_project_ip_access_list" "this" {
-  project_id = var.project_id
-  cidr_block = var.ip_access_cidr
-  comment    = "Workshop - revisar/cerrar despues de la sesion"
 }

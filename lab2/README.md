@@ -4,27 +4,31 @@
 
 ## Objetivo
 
-Desplegar un replica set **multi-cloud** (un nodo en AWS, uno en Azure y uno en GCP) usando el **módulo oficial `cluster`** de MongoDB Atlas en vez de recursos planos. Vas a ver cómo un módulo encapsula varios recursos y reduce el boilerplate respecto del Lab 1.
+Desplegar un replica set **multi-cloud** (un nodo en AWS, uno en Azure y uno en GCP) usando los **módulos oficiales** de MongoDB Atlas en vez de recursos planos. Vas a ver cómo un módulo encapsula varios recursos y reduce el boilerplate respecto del Lab 1, incluido el **modo referencia** del módulo `project` para operar sobre un proyecto que ya existe.
 
 ## Qué vas a completar
 
-En [`main.tf`](main.tf) hay un `module` y dos recursos. El proyecto no se crea acá: se pasa como `var.project_id`.
+En [`main.tf`](main.tf) hay dos `module` y un recurso. El proyecto no se crea acá: se pasa como `var.project_id`.
 
-1. `module "cluster"` — crea el cluster multi-cloud (tiene un `# TODO` en la lista `regions`).
-2. `mongodbatlas_database_user` — el usuario de base (recurso plano, igual que en el Lab 1).
-3. `mongodbatlas_project_ip_access_list` — ya viene resuelto en el scaffold (acceso público para el workshop).
+1. `module "project"` — ya viene resuelto en **modo referencia** (`project_id` en vez de `org_id`/`name`): no crea el proyecto, solo gestiona la `ip_access_list` sobre el proyecto existente.
+2. `module "cluster"` — crea el cluster multi-cloud (tiene un `# TODO` en la lista `regions`).
+3. `mongodbatlas_database_user` — el usuario de base (recurso plano, igual que en el Lab 1).
 
 `versions.tf`, `variables.tf` y `outputs.tf` ya están completos.
 
 ## Documentación de referencia
 
-El módulo publica sus **inputs y outputs** en el Terraform Registry (pestaña *Inputs* / *Outputs*):
+Los módulos publican sus **inputs y outputs** en el Terraform Registry (pestaña *Inputs* / *Outputs*):
 
+- Módulo `project`: https://registry.terraform.io/modules/terraform-mongodbatlas-modules/project/mongodbatlas/latest
+- Módulo `project` en modo referencia (ejemplo): https://github.com/terraform-mongodbatlas-modules/terraform-mongodbatlas-project/tree/main/examples/reference_mode
 - Módulo `cluster`: https://registry.terraform.io/modules/terraform-mongodbatlas-modules/cluster/mongodbatlas/latest
 - `mongodbatlas_database_user`: https://registry.terraform.io/providers/mongodb/mongodbatlas/latest/docs/resources/database_user
 - Identificadores de región Atlas: https://www.mongodb.com/docs/atlas/cloud-providers-regions/
 
 ## Pistas
+
+**Módulo `project` (modo referencia):** ya viene resuelto. Al pasar `project_id` el módulo no crea el proyecto; solo administra la `ip_access_list` (con `skip_allow_all_validation = true`, porque rechaza `0.0.0.0/0` sin ese flag). Expone el output `id`, que se usa como `project_id` del cluster y del usuario (`module.project.id`).
 
 **Módulo `cluster`:**
 - `project_id` = `var.project_id`, `cluster_type` = `REPLICASET`.
@@ -36,7 +40,7 @@ El módulo publica sus **inputs y outputs** en el Terraform Registry (pestaña *
 - **El orden de la lista define la prioridad de elección** (la primera es la primaria, priority 7). No hay un campo `priority` de entrada.
 - No pongas `instance_size`: el módulo usa **M10** por defecto.
 
-**Usuario de base:** idéntico al Lab 1 (`auth_database_name` = `admin`, rol `readWriteAnyDatabase`), con `project_id = var.project_id`.
+**Usuario de base:** idéntico al Lab 1 (`auth_database_name` = `admin`, rol `readWriteAnyDatabase`), con `project_id = module.project.id`.
 
 ## Aplicar
 
